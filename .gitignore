@@ -152,5 +152,4 @@ cython_debug/
 #.idea/
 *.7z
 *.csv
-*.txt
 *.bak
