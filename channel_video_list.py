@@ -37,16 +37,25 @@ def get_all_videos_id(playlist_id):
 
     return video_list
 
-def get_video_info(video_id):
-    url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CliveStreamingDetails&id=" + video_id + "&key=" + API_KEY
-
+def get_video_info(video_id, full_json = False):
+    url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CliveStreamingDetails%2CcontentDetails&id=" + video_id + "&key=" + API_KEY
+    #%2Cstatistics
     response = requests.get(url)
     response_json = response.json()
 
-    video_name = response_json["items"][0]["snippet"]["title"]
-    clean_name = ("".join(list(filter(lambda ch: ord(ch) in range(1, 128) and (ch not in ".<>:\"/\\|?*"), video_name)))).replace(" ", "_")
+    if full_json:
+        return response_json
+    else:
+        video_name = response_json["items"][0]["snippet"]["title"]
+        clean_name = ("".join(list(filter(lambda ch: ord(ch) in range(1, 128) and (ch not in ".<>:\"/\\|?*"), video_name)))).replace(" ", "_")
 
-    start_time = response_json["items"][0].get("liveStreamingDetails", {"actualStartTime":""})["actualStartTime"]
-    end_time = response_json["items"][0].get("liveStreamingDetails", {"actualEndTime":""})["actualEndTime"]
+        start_time = response_json["items"][0].get("liveStreamingDetails", {"actualStartTime":""})["actualStartTime"]
+        end_time = response_json["items"][0].get("liveStreamingDetails", {"actualEndTime":""})["actualEndTime"]
 
-    return {"video_name":video_name, "clean_name": clean_name, "start_time": start_time, "end_time":end_time, "video_id": video_id}
+        return {"video_name":video_name, "clean_name": clean_name, "start_time": start_time, "end_time":end_time, "video_id": video_id}
+
+
+if __name__ == "__main__":
+    video_id_list = ["pXH5BZViSOM"]
+    for video_id in video_id_list:
+        print(str(get_video_info(video_id, full_json=True)).replace("'",'"').replace('"nis', "'nis"), file=open("clip_example_" + video_id + ".json", "w", encoding="utf-8"))

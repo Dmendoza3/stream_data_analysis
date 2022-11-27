@@ -27,7 +27,7 @@ def download_chat(parent_folder, video_name, video_id):
     chat = pytchat.create(video_id=video_id)
 
     # try:
-    print("Downloading", video_id,"...", end="")
+    print("Downloading", video_id,"...")
     while chat.is_alive():
         for c in chat.get().items:
             try:
@@ -44,6 +44,8 @@ def download_chat(parent_folder, video_name, video_id):
     #     writeOnFile(parent_folder + "/" + video_name + "." + video_id + ".chatters.csv", chatter_list, HEADERS)
 
 if __name__ == "__main__":
+    if len(sys.argv) == 2:
+        download_chat("./", "call_download_" + sys.argv[1], sys.argv[1])
     if len(sys.argv) == 3:
         download_chat(sys.argv[1], "", sys.argv[2])
     else:

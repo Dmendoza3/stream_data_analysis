@@ -1,4 +1,5 @@
 import os
+import sys
 import threading, queue
 from chat_capture_all_args_function import download_chat
 
@@ -13,15 +14,15 @@ def worker():
 
         q.task_done()
 
-parent_folder = "chat_archive"
+parent_folder = sys.argv[1] if len(sys.argv) == 2 else "chat_archive"
 
 list_parent_folders = os.listdir("./" + parent_folder)
 
 video_list_params = []
 
 for folder in list_parent_folders:
-    if os.path.isdir("./chat_archive/" + folder):
-        list_channel_files = os.listdir("./chat_archive/" + folder)
+    if os.path.isdir("./" + parent_folder + "/" + folder):
+        list_channel_files = os.listdir("./" + parent_folder + "/" + folder)
         for file in list_channel_files:
             if len(file.split(".")) == 3:
                 video_name, video_id, ext = file.split(".")

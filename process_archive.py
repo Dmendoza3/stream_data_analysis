@@ -6,8 +6,12 @@ import shutil
 from datetime import datetime
 #import threading, queue
 
-def generate_chatter_list(row=[]):
+def generate_chatter_list(row=[], video_id="", only_members=False):
     if len(row) > 0:
+        if only_members:
+            if row[17] != "True":
+                return
+
         if chatter_list.get(row[11], -1) == -1:
             chatter_list[row[11]] = {
                 "author.name": row[10], 
@@ -15,12 +19,17 @@ def generate_chatter_list(row=[]):
                 "last_message_timestamp": row[3],
                 "first_message_content": row[2],
                 "last_message_content": row[2],
+                "first_message_video_id": video_id,
+                "last_message_video_id": video_id,
                 "message_count": 1,
                 "text_msg_count": 1 if row[0] == "textMessage" else 0,
                 "sc_count": 1 if row[0] == "superChat" else 0,
                 "ss_count": 1 if row[0] == "superSticker" else 0,
                 "first_member_timestamp": row[3] if row[17] == "True" else 2**42,
                 "last_member_timestamp": row[3] if row[17] == "True" else -(2**42),
+                "first_member_video_id": video_id if row[17] == "True" else "",
+                "last_member_video_id": video_id if row[17] == "True" else "",
+                "lastest_member_badge": row[14],
                 "currencies": {row[8],} if row[0] == "superChat" else {'',},
                 "currencies_values": {row[8]: float(row[6])} if row[0] == "superChat" else {}
             }
@@ -28,15 +37,20 @@ def generate_chatter_list(row=[]):
             if row[3] < chatter_list[row[11]]["first_message_timestamp"]:
                 chatter_list[row[11]]["first_message_timestamp"] = row[3]
                 chatter_list[row[11]]["first_message_content"] = row[2]
+                chatter_list[row[11]]["first_message_video_id"] = video_id
                 if row[17] == "True":
                     if int(row[3]) < int(chatter_list[row[11]]["first_member_timestamp"]):
                         chatter_list[row[11]]["first_member_timestamp"] = row[3]
+                        chatter_list[row[11]]["first_member_video_id"] = video_id
             
             if row[3] >= chatter_list[row[11]]["last_message_timestamp"]:
                 chatter_list[row[11]]["last_message_timestamp"] = row[3]
                 chatter_list[row[11]]["last_message_content"] = row[2]
+                chatter_list[row[11]]["last_message_video_id"] = video_id
                 if row[17] == "True":
                     chatter_list[row[11]]["last_member_timestamp"] = row[3]
+                    chatter_list[row[11]]["lastest_member_badge"] = row[14]
+                    chatter_list[row[11]]["last_member_video_id"] = video_id
 
             chatter_list[row[11]]["message_count"] += 1
             if row[0] == "textMessage":
@@ -54,7 +68,7 @@ def generate_chatter_list(row=[]):
                     chatter_list[row[11]]["currencies_values"][row[8]] += float(row[6])
 
     else:
-        o_filename = "proccessed/" + file_alias + "_proccessed_" + datetime.now().strftime("%Y%m%d%H%M%S") + ".csv"
+        o_filename = destination_folder + "/processed/" + file_alias + "_processed_" + datetime.now().strftime("%Y%m%d%H%M%S") + ("-only-members" if only_members else "") + ".csv"
         o_file = open(o_filename, "w", encoding="utf-8")
 
         print("creating", o_filename,"...")
@@ -65,6 +79,8 @@ def generate_chatter_list(row=[]):
             "first_message_timestamp", 
             "last_message_timestamp",
             "msg_date_difference", 
+            "first_message_video_id",
+            "last_message_video_id",
             "first_date_formatted", 
             "last_date_formatted", 
             "message_count",
@@ -75,6 +91,9 @@ def generate_chatter_list(row=[]):
             "last_member_timestamp",
             "first_membership_date",
             "last_membership_date",
+            "first_member_video_id",
+            "last_member_video_id",
+            "lastest_member_badge",
             "currencies",
             "currencies_values",
             sep=",", file=o_file)
@@ -93,12 +112,14 @@ def generate_chatter_list(row=[]):
                 currencies_values_list = '"' + str(chatter_list[chatter]["currencies_values"]).replace('"', "'").replace('{','').replace('}','').replace("\\xa0", "") + '"'
 
                 print(chatter, 
-                '"' + chatter_list[chatter]["author.name"] + '"', 
-                '"' + chatter_list[chatter]["first_message_content"] + '"', 
-                '"' + chatter_list[chatter]["last_message_content"] + '"', 
+                '"' + chatter_list[chatter]["author.name"].replace('"',"") + '"', 
+                '"' + chatter_list[chatter]["first_message_content"].replace('"',"") + '"', 
+                '"' + chatter_list[chatter]["last_message_content"].replace('"',"") + '"', 
                 chatter_list[chatter]["first_message_timestamp"], 
                 chatter_list[chatter]["last_message_timestamp"],
                 int(chatter_list[chatter]["last_message_timestamp"]) - int(chatter_list[chatter]["first_message_timestamp"]),
+                chatter_list[chatter]["first_message_video_id"], 
+                chatter_list[chatter]["last_message_video_id"],
                 first_message_date,
                 last_message_date,
                 chatter_list[chatter]["message_count"],
@@ -109,6 +130,9 @@ def generate_chatter_list(row=[]):
                 chatter_list[chatter]["last_member_timestamp"],
                 first_membership_date,
                 last_membership_date,
+                chatter_list[chatter]["first_member_video_id"],
+                chatter_list[chatter]["last_member_video_id"],
+                chatter_list[chatter]["lastest_member_badge"],
                 currency_list,
                 currencies_values_list,
                 sep=",", file=o_file)
@@ -261,7 +285,8 @@ HEADERS = [
 ]
 
 parent_folder = sys.argv[1]
-file_alias = sys.argv[2]
+destination_folder = sys.argv[2]
+file_alias = sys.argv[3]
 list_parent_folders = os.listdir("./" + parent_folder)
 
 chatter_list = {}
@@ -277,7 +302,7 @@ sizes = {}
 move_list = set()
 
 for index, file in enumerate(list_parent_folders):
-    print("processing file(", index+1, "/", list_size, ")", sep="", end="\r")
+    print("processing file(", index + 1, "/", list_size, ")", sep="", end="\r")
     if len(file.split(".")) == 3:
         video_name, video_id, ext = file.split(".")
         if ext == "csv":
@@ -288,9 +313,9 @@ for index, file in enumerate(list_parent_folders):
                 for sub_i, row in enumerate(i_csv_file):
                     if sub_i > 0:
                         if len(row) > 0:
-                            #generate_chatter_list(row)
+                            generate_chatter_list(row,video_id)
                             #generate_members_by_date_list(row, video_id)
-                            generate_chatters_by_video_list(row, video_id, video_name)
+                            #generate_chatters_by_video_list(row, video_id, video_name)
                     #count_row_sizes(row)
                     # if len(row) > 19:
                         #move_corrupt_files(file)
@@ -299,6 +324,6 @@ for index, file in enumerate(list_parent_folders):
                 
 
 #count_row_sizes()
-#generate_chatter_list()
+generate_chatter_list()
 #generate_members_by_date_list()
-generate_chatters_by_video_list()
+#generate_chatters_by_video_list()

@@ -153,3 +153,7 @@ cython_debug/
 *.7z
 *.csv
 *.bak
+clip_example_CQRsfjHB-BA.json
+*.json
+*.txt
+*.xlsx
