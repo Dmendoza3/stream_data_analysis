@@ -11,7 +11,7 @@ def external_chat_download(channel_code):
 
 
 #channel_code_list = ["amelia","calliope","gura","inanis","kiara","irys","sana","ceres","ouro","mumei","hakos"]
-channel_code_list = ["gura"]
+channel_code_list = ["gura", "hakos"]
 
 for c in channel_code_list:
     external_chat_download(c)

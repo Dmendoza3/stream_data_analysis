@@ -225,6 +225,24 @@ def generate_chatters_by_video_list(row=[], video_id="", video_name=""):
             except:
                 print("before_error:", members_by_video_list[video_id]["first_message_timestamp"])
 
+def generate_chatters_by_key_word(row=[], video_id="", key_word="hello"):
+    if len(row) > 0:
+        #video_id, message, datetime, author_name, author_id
+        message = str(row[2])
+        if key_word in message.lower():
+            chats_by_key_word.append([video_id, '"' + row[2] + '"', row[4], row[10], row[11]])
+    else:
+        o_filename = "proccessed/" + file_alias + "_chat_count_by_key_word_" + datetime.now().strftime("%Y%m%d%H%M%S") + ".csv"
+        o_file = open(o_filename, "w", encoding="utf-8")
+
+        print("creating", o_filename,"...")
+        print("video_id", "message", "date", "author_name", "author_id", sep=",", file=o_file)
+        for n_row in chats_by_key_word:
+            try:
+                print(*n_row, sep=",", file=o_file)
+            except:
+                print("before_error:", members_by_video_list[video_id]["first_message_timestamp"])
+
 def count_row_sizes(row=[]):
     if len(row) > 0:
         if sizes.get(len(row), -1) == -1:
@@ -295,6 +313,8 @@ members_by_date_list = {}
 
 members_by_video_list = {}
 
+chats_by_key_word = []
+
 list_size = len(list_parent_folders)
 
 sizes = {}
@@ -314,6 +334,7 @@ for index, file in enumerate(list_parent_folders):
                     if sub_i > 0:
                         if len(row) > 0:
                             generate_chatter_list(row,video_id)
+                            #generate_chatters_by_key_word(row, video_id, "kiara")
                             #generate_members_by_date_list(row, video_id)
                             #generate_chatters_by_video_list(row, video_id, video_name)
                     #count_row_sizes(row)
@@ -325,5 +346,6 @@ for index, file in enumerate(list_parent_folders):
 
 #count_row_sizes()
 generate_chatter_list()
+#generate_chatters_by_key_word()
 #generate_members_by_date_list()
 #generate_chatters_by_video_list()

@@ -13,6 +13,19 @@ def get_date(str_date):
 
     return str(int(start_unix))
 
+def superchat_poi(video_id, currency="₩"):
+    url = f"https://holoapi.poi.cat/api/v4/live_chat/highlight?id={video_id}"
+
+    response = requests.get(url)
+
+    sum = 0
+    for sc in response.json()["paid"]:
+        if sc["amount"][0] == currency:
+            value = sc["amount"][1:].replace(",", "")
+            sum += float(value)
+    return sum
+
+
 def get_video_list_info_range_poi(channel_code, start_at = "", start_at_unix = 0, end_at = "", end_at_unix = 0):
     url = "https://holoapi.poi.cat/api/v4/youtube_streams?ids=" + channel_code + "&status=live,ended&&orderBy=start_time:asc"
 
@@ -31,20 +44,26 @@ def get_video_list_info_range_poi(channel_code, start_at = "", start_at_unix = 0
     proccesed_list = []
 
     video_playlist = response.json()
-    for video_info  in video_playlist["streams"]:
-        proccesed_list.append([
-            video_info["streamId"], 
-            video_info["title"], 
-            video_info.get("averageViewerCount","-"),
-            video_info.get("maxViewerCount", "-"),
-            datetime.utcfromtimestamp(int(video_info["startTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            datetime.utcfromtimestamp(int(video_info.get("scheduleTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            datetime.utcfromtimestamp(int(video_info["endTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            video_info["startTime"],
-            video_info.get("scheduleTime", "0"),
-            video_info["endTime"]
-        ])
-        #print(video_info["title"])
+    if video_playlist.get("code", False):
+        print(url)
+    else:
+        for video_info in video_playlist["streams"]:
+            try:
+                proccesed_list.append([
+                    video_info["streamId"], 
+                    video_info["title"], 
+                    video_info.get("averageViewerCount","-"),
+                    video_info.get("maxViewerCount", "-"),
+                    datetime.utcfromtimestamp(int(video_info["startTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+                    datetime.utcfromtimestamp(int(video_info.get("scheduleTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+                    datetime.utcfromtimestamp(int(video_info["endTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+                    video_info["startTime"],
+                    video_info.get("scheduleTime", "0"),
+                    video_info["endTime"],
+                    superchat_poi(video_info["streamId"])
+                ])
+            except:
+                print(video_info)
 
     return proccesed_list
 
@@ -61,19 +80,21 @@ def get_video_list_info_starting_at_poi(channel_code, start_at = "", start_at_un
 
     video_playlist = response.json()
     for video_info  in video_playlist["streams"]:
-        proccesed_list.append([
-            video_info["streamId"], 
-            video_info["title"], 
-            video_info.get("averageViewerCount","-"),
-            video_info.get("maxViewerCount", "-"),
-            datetime.utcfromtimestamp(int(video_info["startTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            datetime.utcfromtimestamp(int(video_info.get("scheduleTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            datetime.utcfromtimestamp(int(video_info["endTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-            video_info["startTime"],
-            video_info.get("scheduleTime", "0"),
-            video_info["endTime"]
-        ])
-        #print(video_info["title"])
+        try:
+            proccesed_list.append([
+                video_info["streamId"], 
+                video_info["title"], 
+                video_info.get("averageViewerCount","-"),
+                video_info.get("maxViewerCount", "-"),
+                datetime.utcfromtimestamp(int(video_info["startTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+                datetime.utcfromtimestamp(int(video_info.get("scheduleTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+                datetime.utcfromtimestamp(int(video_info.get("endTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
+                video_info["startTime"],
+                video_info.get("scheduleTime", "0"),
+                video_info.get("endTime", -1)
+            ])
+        except:
+            print(video_info)
 
     return proccesed_list
 
@@ -94,7 +115,7 @@ def get_video_list_info_all_poi_range(channel_code, start_at = "", start_at_unix
     video_list = get_video_list_info_range_poi(channel_code, start_at = start_at, end_at=end_at)
     complete_list.extend(video_list)
     while len(video_list) > 0:
-        last_unix_time = video_list[-1][-1]
+        last_unix_time = video_list[-1][-2]
         print("Downloading from",video_list[0][4],"to",video_list[-1][6])
         video_list = get_video_list_info_range_poi(channel_code, start_at_unix=last_unix_time, end_at=end_at)
         complete_list.extend(video_list)
@@ -118,7 +139,7 @@ def download_video_info(start_date, end_date, channel_list=[]):
 
         video_list = get_video_list_info_all_poi_range(channel_code, start_at=date_range[0], end_at=date_range[1])
 
-        headers = ["streamId", "title", "averageViewerCount", "maxViewerCount", "startTime_f", "scheduleTime_f", "endTime_f", "startTime", "scheduleTime", "endTime"]
+        headers = ["streamId", "title", "averageViewerCount", "maxViewerCount", "startTime_f", "scheduleTime_f", "endTime_f", "startTime", "scheduleTime", "endTime", "superchats"]
         o_csv_file.writerow(headers)
         o_csv_file.writerows(video_list)
 
@@ -128,6 +149,7 @@ def download_video_info(start_date, end_date, channel_list=[]):
         #print(str(get_video_list_info_all_poi(channel_code)).replace("],", "\n").replace("[", "").replace("]]", ""), file=o_csv_file)
 
 if __name__ == "__main__":
+    #print(superchat_poi("B_JOXosJVNo"))
     if len(sys.argv) == 3:
         start_date = sys.argv[1] + " 00:00:00"
         end_date = sys.argv[2] + " 23:59:59"
