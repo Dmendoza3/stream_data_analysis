@@ -159,3 +159,12 @@ clip_example_CQRsfjHB-BA.json
 *.xlsx
 *.txt
 *.zip
+*.mp3
+*.mp4
+*.webm
+__video_editing/yt-dlp.exe
+__video_editing/ffmpeg.exe
+__video_editing/ffprobe.exe
+__video_editing/credentials.storage
+*.html
+*.png

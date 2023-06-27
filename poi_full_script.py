@@ -2,11 +2,11 @@ import os
 import sys
 import poi_video_info
 
-start_date, end_date = ("2020-01-01 00:00:00", "2023-03-10 23:59:59")
+start_date, end_date = ("2023-06-12 00:00:00", "2023-06-23 23:59:59")
 
-poi_video_info.download_video_info(start_date, end_date, ["kiara"]) ##download channel videolist
+poi_video_info.download_video_info(start_date, end_date, ["ouro"]) ##download channel videolist
 
-#os.system("python chat_process_all_file.py ./poi_channel_data/video_templates") ##download all chatlogs
+os.system("python chat_process_all_file.py ./poi_channel_data/video_templates") ##download all chatlogs
 
 #os.system("python poi_quick_procress_archive.py") ##extract chatter info
 

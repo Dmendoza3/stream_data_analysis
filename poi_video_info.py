@@ -150,9 +150,10 @@ def download_video_info(start_date, end_date, channel_list=[]):
 
 if __name__ == "__main__":
     #print(superchat_poi("B_JOXosJVNo"))
-    if len(sys.argv) == 3:
-        start_date = sys.argv[1] + " 00:00:00"
-        end_date = sys.argv[2] + " 23:59:59"
-        download_video_info(start_date, end_date)
-    else:
-        print("Arguments missing: start_date end_date")
+    print(get_video_list_info_range_poi("irys", start_at="2023-05-25 00:00:00", end_at="2023-05-31 00:00:00"))
+    # if len(sys.argv) == 3:
+    #     start_date = sys.argv[1] + " 00:00:00"
+    #     end_date = sys.argv[2] + " 23:59:59"
+    #     download_video_info(start_date, end_date)
+    # else:
+    #     print("Arguments missing: start_date end_date")
