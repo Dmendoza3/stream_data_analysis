@@ -1,21 +1,9 @@
 import os
 import sys
 import pytchat
+from datetime import datetime
 import unicodedata
 import re
-
-##utils
-def writeOnFile(filename, slist, headers):
-    outf = open(filename, "w", encoding="utf-8")
-    print(*headers,sep=",", file=outf)
-    for k in slist:
-        print('\"' + k + '\"', *slist[k], sep=",",file=outf)
-
-##Constants
-# if len(sys.argv) > 1:
-#     list_dic = sys.argv[1]
-#     video_name = sys.argv[2]
-#     video_id = sys.argv[3]
 
 ##Get video name
 
@@ -26,15 +14,17 @@ def slugify(value, allow_unicode=False):
     else:
         value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore').decode('ascii')
     value = re.sub(r'[^\w\s-]', '', value.lower())
-    return re.sub(r'[-\s]+', '-', value).strip('-_')
+    return re.sub(r'[-\s]+', '_', value).strip('-_')
 
-def download_chat(parent_folder, video_name, video_id, overwrite=True, persistent=True, echo=True, slugify=False):
+def download_chat(parent_folder, video_name, video_id, overwrite=True, persistent=True, echo=True, fix_filename=False):
     os.makedirs(parent_folder, exist_ok=True)
 
     CHAT_HEADERS = ["type","id","message","timestamp","datetime","elapsedTime","amountValue","amountString","currency","bgColor","author.name","author.channelId","author.channelUrl","author.imageUrl","author.badgeUrl","author.isVerified","author.isChatOwner","author.isChatSponsor","author.isChatModerator"]
 
-    if slugify:
+    if fix_filename:
         video_name = slugify(video_name)
+
+    print("[" + datetime.now().strftime("%Y-%m-%d %H:%M:%S") + "]", video_id, parent_folder, f"{video_name}.csv", file=open("yt_chat_downloads.log", "a"))
 
     new_filename = parent_folder + "/" + video_name + "." + video_id + ".csv"
 
@@ -94,18 +84,16 @@ def download_chat_timestamp(parent_folder, video_name, video_id):
             except:
                 pass
 
-    # except :
-    #     writeOnFile(parent_folder + "/" + video_name + "." + video_id + ".chatters.err.csv", chatter_list, HEADERS)
-    # finally:
-    #     writeOnFile(parent_folder + "/" + video_name + "." + video_id + ".chatters.csv", chatter_list, HEADERS)
-
 if __name__ == "__main__":
     if len(sys.argv) == 2:
         download_chat_timestamp("./", "call_download_" + sys.argv[1], sys.argv[1])
         #download_chat("./", "call_download_" + sys.argv[1], sys.argv[1])
-    if len(sys.argv) == 3:
+    elif len(sys.argv) == 3:
         download_chat(sys.argv[1], "", sys.argv[2])
-    else:
-        if len(sys.argv) > 2:
-            download_chat(sys.argv[1],sys.argv[2],sys.argv[3])
+    elif len(sys.argv) == 4:
+        download_chat(sys.argv[1], sys.argv[2], sys.argv[3])
+    elif len(sys.argv) == 5:
+        if sys.argv[4] == "-auto":
+            download_chat(sys.argv[1], sys.argv[2], sys.argv[3], overwrite=False,persistent=False, echo=True, fix_filename=True)
     
+    print(sys.argv)

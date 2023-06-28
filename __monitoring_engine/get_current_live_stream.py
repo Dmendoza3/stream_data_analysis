@@ -55,7 +55,8 @@ class currentLiveParser(HTMLParser):
 def get_current_live_stream(channel_id):
     url = f"https://www.youtube.com/channel/{channel_id}/live"
 
-    response = requests.get(url, headers={"User-Agent": "Test App (v0.0.1)"})
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0"})
+    #response = requests.get(url, headers={"User-Agent": "Test App (v0.0.1)"})
 
     txt = response.text
 
@@ -69,7 +70,8 @@ def get_current_live_stream(channel_id):
 def get_video_info(video_id):
     url = f"https://www.youtube.com/watch?v={video_id}"
 
-    response = requests.get(url, headers={"User-Agent": "Test App (v0.0.1)"})
+    response = requests.get(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/114.0"}) #desktop
+    #response = requests.get(url, headers={"User-Agent": "Test App (v0.0.1)"}) #test app
 
     txt = response.text
 
