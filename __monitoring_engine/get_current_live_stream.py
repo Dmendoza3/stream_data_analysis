@@ -63,7 +63,7 @@ def get_current_live_stream(channel_id):
     parser = currentLiveParser()
     parser.feed(txt)
 
-    print(txt, file=open("raw.html","w", encoding="utf-8"))
+    #print(txt, file=open("raw.html","w", encoding="utf-8"))
 
     return parser.get_video_data()
 
@@ -75,7 +75,7 @@ def get_video_info(video_id):
 
     txt = response.text
 
-    print(txt, file=open("raw.html","w", encoding="utf-8"))
+    #print(txt, file=open("raw.html","w", encoding="utf-8"))
 
     parser = currentLiveParser()
     parser.feed(txt)

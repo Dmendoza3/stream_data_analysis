@@ -94,6 +94,7 @@ if __name__ == "__main__":
         download_chat(sys.argv[1], sys.argv[2], sys.argv[3])
     elif len(sys.argv) == 5:
         if sys.argv[4] == "-auto":
-            download_chat(sys.argv[1], sys.argv[2], sys.argv[3], overwrite=False,persistent=False, echo=True, fix_filename=True)
+            sys.argv[0] = f"downloading {sys.argv[3]}"
+            download_chat(sys.argv[1], sys.argv[2], sys.argv[3], overwrite=False,persistent=False, echo=False, fix_filename=True)
     
-    print(sys.argv)
+    #print(sys.argv)

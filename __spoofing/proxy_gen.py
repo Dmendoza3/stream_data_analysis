@@ -25,19 +25,13 @@ def main():
       'ip':   row.find_all('td')[0].string,
       'port': row.find_all('td')[1].string
     })
+  print("found proxies:", proxies)
+  print("length:", len(proxies))
 
   # Choose a random proxy
-  proxy_index = random_proxy()
-  proxy = proxies[proxy_index]
-
-  for n in range(1, 20):
+  for n, proxy in enumerate(proxies[:]):
     req = Request('http://icanhazip.com')
     req.set_proxy(proxy['ip'] + ':' + proxy['port'], 'http')
-
-    # Every 10 requests, generate a new proxy
-    if n % 10 == 0:
-      proxy_index = random_proxy()
-      proxy = proxies[proxy_index]
 
     # Make the call
     try:
@@ -45,10 +39,12 @@ def main():
       print('#' + str(n) + ': ' + my_ip)
       #clear_output(wait = True)
     except: # If error, delete this proxy and find another one
-      del proxies[proxy_index]
+      del proxies[proxies.index(proxy)]
       print('Proxy ' + proxy['ip'] + ':' + proxy['port'] + ' deleted.')
-      proxy_index = random_proxy()
-      proxy = proxies[proxy_index]
+      #proxy_index = random_proxy()
+      #proxy = proxies[proxy_index]
+
+  print(proxies)
 
 # Retrieve a random index proxy (we need the index to delete it if not working)
 def random_proxy():

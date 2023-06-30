@@ -13,14 +13,14 @@ def worker(id, ret_list):
         q.task_done()
 
 def get_current_status(ignore_free_chat=True):
-    in_f = open(f"{data_dir}/watch_list.txt", "r")
-    in_permanent_f = open(f"{data_dir}/permanent_video_watch_list.txt", "r", encoding="utf-8")
+    in_f = open(f"{data_dir}/watch_list.dat", "r")
+    in_permanent_f = open(f"{data_dir}/permanent_video_watch_list.dat", "r", encoding="utf-8")
     watch_list = [tuple(line.split(",")) for line in in_f.read().split("\n")]
     permanent_video_watch_list = [tuple(line.split(",")) for line in in_permanent_f.read().split("\n")]
     
     freechat_list = []
     if ignore_free_chat:
-        in_f_freechat = open(f"{data_dir}/free_chat_list.txt", "r", encoding="utf-8")
+        in_f_freechat = open(f"{data_dir}/free_chat_list.dat", "r", encoding="utf-8")
 
         for line in in_f_freechat:
             name, channel_id, video_id, *title = line.split(",")
