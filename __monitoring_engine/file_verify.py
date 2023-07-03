@@ -18,10 +18,11 @@ def verify_file(filename, tolerance=3):
         timestamp_val = row[timestamp_idx]
         datetime_val = row[datetime_idx]
         elapsedTime_val = row[elapsedTime_idx]
+        
 
-        if start_timestamp == -1:
-            if elapsedTime_val in ("-0:00", "0:00", "0:01", "0:02", "0:03"):
-                start_timestamp = timestamp_val
+        # if start_timestamp == -1:
+        #     if elapsedTime_val in ("-0:00", "0:00", "0:01", "0:02", "0:03"):
+        #         start_timestamp = timestamp_val
 
 
     return start_timestamp
