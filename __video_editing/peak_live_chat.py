@@ -163,14 +163,14 @@ def get_frames_by_periods(file, frame_limit=-1, filter_word="", frequency_tolera
 if __name__=="__main__":
     if len(sys.argv) == 2:
         _, filename =  sys.argv
-        word_filter = ("_kroyandere", '"')
-        min_length = 3
-        tolerance = 3
+        word_filter = ""
+        min_length = 1
+        tolerance = 1
         # for tolerance in range(20, 100):
         #     print(f"Tolerance({word_filter}):", tolerance)
         #     print(get_frames_by_periods(filename, 2, word_filter, tolerance, min_length, (0,0), (0,0)))
-        print(*get_frames_by_periods(filename, -1, frequency_tolerance=15,filter_word=word_filter), sep="\n",file=open("periods.csv", "w", encoding="utf-8"))
-        print(*get_frames_by_file(filename, -1, word_filter), sep="\n",file=open("frames.csv", "w", encoding="utf-8"))
+        print(*get_frames_by_periods(filename, -1, frequency_tolerance=tolerance,filter_word=word_filter,min_length=1), sep="\n",file=open("periods.csv", "w", encoding="utf-8"))
+        #print(*get_frames_by_file(filename, -1, word_filter), sep="\n",file=open("frames.csv", "w", encoding="utf-8"))
     #print(get_live_chat_message_count("3TCBoRzNC5I"))
     #print(get_live_chat_message_count_from_file("3TCBoRzNC5I.csv"))
     #print(get_frames_by_file("nQLfdu5KZSA.csv", 10, ("hic_test_recording", r"\bhic\b", ":_ameHic1::_ameHic2::_ameHic3:"), (0,0), (0,0), 8))
