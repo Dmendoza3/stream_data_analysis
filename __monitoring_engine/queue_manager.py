@@ -5,7 +5,7 @@ from live_stream_status import get_current_status
 from chat_capture_all_args_function import download_chat
 
 def external_chat_capture(parent_folder, video_name, video_id):
-    os.system(f"python chat_capture_all_args_function.py {parent_folder} \"{video_name}\" {video_id} -auto")
+    print(parent_folder, video_name, video_id)
 
 def worker(name):
     print("w", name, "init...")
@@ -48,7 +48,7 @@ def config_control():
             n_config = {}
             for line in in_f:
                 name, value = line.split("=")
-                config[name] = [value]
+                config[name] = value
             config = n_config
             in_f.close()
         
@@ -117,22 +117,22 @@ try:
             print("error en la conexion", e)
         
         wait_time = 15 * check_counter[0]
+        if server_mode:
+            print("checking again in ", wait_time, " " * 10, end="\r")
         while wait_time:
-            print("checking again in ", wait_time, " " * 10, end="\r") 
+            if not server_mode:
+                print("checking again in ", wait_time, " " * 10, end="\r")
             wait_time -= 1
-            if wait_time % 15 == 0 or server_mode:
+            if wait_time % 15 == 0:
                 new_status = [(i, w) for i, w in enumerate(worker_status)]
-                if str(new_status) != prev_status or server_mode:
+                if str(new_status) != prev_status:
                     print("_"*22, *new_status, sep="\n")
                     prev_status = str(new_status)
 
             if check_counter[0] == 0:
                 break
-            if server_mode:
-                time.sleep(1)
-            else:
-                time.sleep(wait_time)
-                wait_time = 0
+            
+            time.sleep(1)
 except KeyboardInterrupt:
     alive = False
 
