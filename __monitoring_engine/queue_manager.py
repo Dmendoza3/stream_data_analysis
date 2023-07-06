@@ -69,6 +69,7 @@ for line in in_f:
 
 in_f.close()
 
+server_mode = int(config["server"]) == 1
 alive = True
 active_video_list = set()
 q = queue.Queue()
@@ -119,15 +120,19 @@ try:
         while wait_time:
             print("checking again in ", wait_time, " " * 10, end="\r") 
             wait_time -= 1
-            if wait_time % 15 == 0:
+            if wait_time % 15 == 0 or server_mode:
                 new_status = [(i, w) for i, w in enumerate(worker_status)]
-                if str(new_status) != prev_status:
+                if str(new_status) != prev_status or server_mode:
                     print("_"*22, *new_status, sep="\n")
                     prev_status = str(new_status)
 
             if check_counter[0] == 0:
                 break
-            time.sleep(1)
+            if server_mode:
+                time.sleep(1)
+            else:
+                time.sleep(wait_time)
+                wait_time = 0
 except KeyboardInterrupt:
     alive = False
 
