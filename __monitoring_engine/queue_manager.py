@@ -5,7 +5,7 @@ from live_stream_status import get_current_status
 from chat_capture_all_args_function import download_chat
 
 def external_chat_capture(parent_folder, video_name, video_id):
-    print(parent_folder, video_name, video_id)
+    os.system(f"python chat_capture_all_args_function.py {parent_folder} \"{video_name}\" {video_id} -auto")
 
 def worker(name):
     print("w", name, "init...")
