@@ -38,19 +38,19 @@ def config_control():
     watch_list_prev_mod_time = os.path.getmtime("data/watch_list.dat")
     permanent_watch_list_prev_mod_time = os.path.getmtime("data/permanent_video_watch_list.dat")
 
-    in_f = open("config.dat", "r")
-    config = {}
-    for line in in_f:
-        name, value = line.split("=")
-        config[name] = [value]
-
-    in_f.close()
     while True:
         new_config_mod_time = os.path.getmtime("config.dat")
         new_watch_list_prev_mod_time = os.path.getmtime("data/watch_list.dat")
         new_permanent_watch_list_prev_mod_time = os.path.getmtime("data/permanent_video_watch_list.dat")
         if new_config_mod_time != config_prev_mod_time:
             config_prev_mod_time = new_config_mod_time
+            in_f = open("config.dat", "r")
+            n_config = {}
+            for line in in_f:
+                name, value = line.split("=")
+                config[name] = [value]
+            config = n_config
+            in_f.close()
         
         if new_watch_list_prev_mod_time != watch_list_prev_mod_time:
             check_counter[0] = 0
@@ -60,12 +60,21 @@ def config_control():
 
         time.sleep(15)
 
+
+config = {}
+in_f = open("config.dat", "r")
+for line in in_f:
+    name, value = line.split("=")
+    config[name] = value
+
+in_f.close()
+
 alive = True
 active_video_list = set()
 q = queue.Queue()
 worker_amount = 10
 worker_status = ["idle"] * worker_amount
-parent_folder = "chat_archive"
+parent_folder = config["archive_location"]
 
 prev_status = ""
 
@@ -103,8 +112,8 @@ try:
                     q.put(([parent_folder + "/" + channel_name, video_name, video_id], t))
                     active_video_list.add(t)
                 #print(list(q.queue))
-        except Exception:
-            print("error en la conexion")
+        except Exception as e:
+            print("error en la conexion", e)
         
         wait_time = 15 * check_counter[0]
         while wait_time:
