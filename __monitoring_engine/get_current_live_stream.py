@@ -85,11 +85,14 @@ def get_video_info(video_id):
 
 if __name__=="__main__":
     ##IRyS
-    channelID = "UC8rcEBzJSleTkf_-agPM20g"
-
-    #channelID = "UCHsx4Hqa-1ORjQTh9TYDhww"
+    channelID = {
+        "Baelz": "UCgmPnx-EEeOrZSg5Tiw7ZRQ",
+        "Mumei": "UC3n5uGu18FoCy23ggWWp8tA",
+        "IRyS": "UC8rcEBzJSleTkf_-agPM20g"
+    }
     
-    print(get_current_live_stream(channelID))
+    for k in channelID:
+        print(get_current_live_stream(channelID[k]))
 
 
     #print(get_video_info("2J-PNiBCT24"))
