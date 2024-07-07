@@ -3,6 +3,7 @@ import sys
 import csv
 import requests
 import time
+import json
 from datetime import datetime
 
 def get_date(str_date):
@@ -27,7 +28,7 @@ def superchat_poi(video_id, currency="₩"):
 
 
 def get_video_list_info_range_poi(channel_code, start_at = "", start_at_unix = 0, end_at = "", end_at_unix = 0):
-    url = "https://holoapi.poi.cat/api/v4/youtube_streams?ids=" + channel_code + "&status=live,ended&&orderBy=start_time:asc"
+    url = f"https://vt-api.poi.cat/api/v4/streams/ended?channelIds={channel_code}"
 
     if len(start_at) > 0:
         url += "&startAt=" + get_date(start_at)
@@ -39,85 +40,47 @@ def get_video_list_info_range_poi(channel_code, start_at = "", start_at_unix = 0
     elif int(end_at_unix) > 0:
         url += "&endAt=" + str(end_at_unix)
 
+
     response = requests.get(url)
 
     proccesed_list = []
 
     video_playlist = response.json()
-    if video_playlist.get("code", False):
+
+    #json.dump(video_playlist, open("test_peko.txt", "w",encoding="utf-8"))
+    if not len(video_playlist):
         print(url)
     else:
-        for video_info in video_playlist["streams"]:
+        for video_info in video_playlist:
             try:
                 proccesed_list.append([
-                    video_info["streamId"], 
-                    video_info["title"], 
-                    video_info.get("averageViewerCount","-"),
-                    video_info.get("maxViewerCount", "-"),
+                    video_info["vtuberId"], #0
+                    video_info["platformId"], #1
+                    video_info["title"], #2
+                    video_info.get("viewerAvg","-"), #3
+                    video_info.get("viewerMax", "-"), #4
                     datetime.utcfromtimestamp(int(video_info["startTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
                     datetime.utcfromtimestamp(int(video_info.get("scheduleTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
                     datetime.utcfromtimestamp(int(video_info["endTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-                    video_info["startTime"],
-                    video_info.get("scheduleTime", "0"),
-                    video_info["endTime"],
-                    superchat_poi(video_info["streamId"])
+                    video_info["startTime"], #8
+                    video_info.get("scheduleTime", "0"), #9
+                    video_info["endTime"], #10
+                    #superchat_poi(video_info["streamId"])
                 ])
             except:
                 print(video_info)
 
     return proccesed_list
 
-def get_video_list_info_starting_at_poi(channel_code, start_at = "", start_at_unix = 0):
-    url = "https://holoapi.poi.cat/api/v4/youtube_streams?ids=" + channel_code + "&status=live,ended&orderBy=start_time:asc" 
-
-    if len(start_at) > 0:
-        url += "&startAt=" + get_date(start_at)
-    elif int(start_at_unix) > 0:
-        url += "&startAt=" + str(start_at_unix)
-    response = requests.get(url)
-
-    proccesed_list = []
-
-    video_playlist = response.json()
-    for video_info  in video_playlist["streams"]:
-        try:
-            proccesed_list.append([
-                video_info["streamId"], 
-                video_info["title"], 
-                video_info.get("averageViewerCount","-"),
-                video_info.get("maxViewerCount", "-"),
-                datetime.utcfromtimestamp(int(video_info["startTime"]) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-                datetime.utcfromtimestamp(int(video_info.get("scheduleTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-                datetime.utcfromtimestamp(int(video_info.get("endTime", 0)) / 1000).strftime('%Y-%m-%d %H:%M:%S'),
-                video_info["startTime"],
-                video_info.get("scheduleTime", "0"),
-                video_info.get("endTime", -1)
-            ])
-        except:
-            print(video_info)
-
-    return proccesed_list
-
-def get_video_list_info_all_poi(channel_code, start_at = "", start_at_unix = ""):
-    complete_list = []
-    video_list = get_video_list_info_starting_at_poi(channel_code, start_at = start_at)
-    complete_list.extend(video_list)
-    while len(video_list) > 0:
-        last_unix_time = video_list[-1][-1]
-        print("Downloading from",video_list[0][4],"to",video_list[-1][6])
-        video_list = get_video_list_info_starting_at_poi(channel_code, start_at_unix=last_unix_time)
-        complete_list.extend(video_list)
-    
-    return complete_list
 
 def get_video_list_info_all_poi_range(channel_code, start_at = "", start_at_unix = "", end_at = "", end_unix = ""):
     complete_list = []
     video_list = get_video_list_info_range_poi(channel_code, start_at = start_at, end_at=end_at)
     complete_list.extend(video_list)
     while len(video_list) > 0:
-        last_unix_time = video_list[-1][-2]
-        print("Downloading from",video_list[0][4],"to",video_list[-1][6])
-        video_list = get_video_list_info_range_poi(channel_code, start_at_unix=last_unix_time, end_at=end_at)
+        last_unix_time = video_list[-1][-3] #endTime in video_list
+        print("Downloading from",video_list[0][7],"to", video_list[-1][5])
+        video_list = get_video_list_info_range_poi(channel_code, start_at=start_at, end_at_unix=last_unix_time)
         complete_list.extend(video_list)
     
     return complete_list
@@ -125,21 +88,34 @@ def get_video_list_info_all_poi_range(channel_code, start_at = "", start_at_unix
 #print(str(get_video_list_info_range_poi("amelia", "2020-09-01", "2020-12-16")).replace("],", "]\n"))
 def download_video_info(start_date, end_date, channel_list=[]):
     date_range = (start_date, end_date)#("2022-05-01 00:00:00", "2022-05-31 23:59:59")
-    channel_code_list = ["amelia","calliope","gura","inanis","kiara","irys","sana","ceres","ouro","mumei","hakos"] if len(channel_list) == 0 else channel_list
+    channel_code_list = [
+        60,#usada-pekora
+        #amelia
+        #calliope
+        #gura
+        #inanis
+        #kiara
+        #irys
+        #sana
+        #ceres
+        #ouro
+        #mumei
+        #hakos
+    ] if len(channel_list) == 0 else channel_list
 
     file_label = "_" + date_range[0].split(" ")[0].replace("-", "_") + "-" + date_range[1].split(" ")[0].replace("-", "_")
 
     main_dir = "poi_channel_data/"
-    os.mkdir(main_dir + "video_templates/")
+    os.makedirs(main_dir + "video_templates/", exist_ok=True)
     for channel_code in channel_code_list:
-        os.mkdir(main_dir + "video_templates/" + channel_code)
+        os.makedirs(main_dir + "video_templates/" + channel_code, exist_ok=True)
 
         o_file = open(main_dir + channel_code + file_label + ".csv", "w", encoding="utf-8")
         o_csv_file = csv.writer(o_file, skipinitialspace=True, lineterminator='\n')
 
         video_list = get_video_list_info_all_poi_range(channel_code, start_at=date_range[0], end_at=date_range[1])
 
-        headers = ["streamId", "title", "averageViewerCount", "maxViewerCount", "startTime_f", "scheduleTime_f", "endTime_f", "startTime", "scheduleTime", "endTime", "superchats"]
+        headers = ["vtuberId", "streamId", "title", "averageViewerCount", "maxViewerCount", "startTime_f", "scheduleTime_f", "endTime_f", "startTime", "scheduleTime", "endTime"]
         o_csv_file.writerow(headers)
         o_csv_file.writerows(video_list)
 
@@ -150,7 +126,8 @@ def download_video_info(start_date, end_date, channel_list=[]):
 
 if __name__ == "__main__":
     #print(superchat_poi("B_JOXosJVNo"))
-    print(get_video_list_info_range_poi("irys", start_at="2023-05-25 00:00:00", end_at="2023-05-31 00:00:00"))
+    #print(get_video_list_info_range_poi("60", start_at="2024-01-01 00:00:00", end_at="2024-03-31 23:59:59"))
+    download_video_info("2023-01-01 00:00:00", "2024-03-31 23:59:59", ["60"])
     # if len(sys.argv) == 3:
     #     start_date = sys.argv[1] + " 00:00:00"
     #     end_date = sys.argv[2] + " 23:59:59"

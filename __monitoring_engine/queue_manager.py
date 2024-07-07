@@ -73,7 +73,7 @@ server_mode = int(config["server"]) == 1
 alive = True
 active_video_list = set()
 q = queue.Queue()
-worker_amount = 10
+worker_amount = 15
 worker_status = ["idle"] * worker_amount
 parent_folder = config["archive_location"]
 
